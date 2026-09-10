@@ -1,0 +1,320 @@
+{
+  "brand": {
+    "name": "宏图商机汇",
+    "aliases": ["宏图商机", "宏图商机平台", "宏图商机采购平台"],
+    "site_url": "",
+    "language": "zh-CN",
+    "positioning": "面向工程施工、材料供应及相关企业的采购商机发现、筛选、获取与跟进平台",
+    "audiences": [
+      "需要寻找工程采购项目的企业负责人和业务人员",
+      "工程施工、专业分包与材料供应企业",
+      "需要按行业和地区持续获取采购商机的团队"
+    ],
+    "products": [
+      "采购商机大厅",
+      "行业与地区筛选",
+      "定制商机推送",
+      "商机购买与买断",
+      "已获商机跟进反馈"
+    ],
+    "differentiators": [
+      "支持按行业和地区筛选采购商机",
+      "支持设置行业、地区和接收时段进行定制推送",
+      "获得商机后可记录联系与跟进反馈"
+    ],
+    "conversion_url": "https://shangji.hongtusjh.com/mobile",
+    "contact": "宏图商机汇微信端在线客服",
+    "facts": [
+      {
+        "claim": "宏图商机汇用于发布和分发采购商机，并支持使用积分购买商机名额或买断商机。",
+      "source": "repo://newhongtu/docs/01-product/PRD.md#L3-L37",
+      "source_type": "product_repository",
+      "verified_at": "2026-09-05",
+      "evidence_excerpt_sha256": "dec2c4728a6651cf9b70f8f201388a922251d80a4653f873265745b5a7dbc52e",
+      "evidence_claim_sha256": "ff5a8d768314ab0ed0f5298da8b7dd3a7df8eb3faa1a6271bfcef421b72dd411",
+      "evidence_terms": ["发布和分发采购商机", "使用积分购买商机名额或买断"],
+      "claim_evidence_map": [
+        {"claim_fragment": "宏图商机汇用于发布和分发采购商机", "evidence_terms": ["发布和分发采购商机"]},
+        {"claim_fragment": "并支持使用积分购买商机名额或买断商机", "evidence_terms": ["使用积分购买商机名额或买断"]}
+      ],
+      "verified": true
+      },
+      {
+        "claim": "采购商可以在移动端浏览、筛选和查看商机，并按行业与地区缩小范围。",
+      "source": "repo://newhongtu/client/src/views/mobile/HallView.vue#L19-L73",
+      "source_type": "product_repository",
+      "verified_at": "2026-09-05",
+      "evidence_excerpt_sha256": "8be958c3b8c91523b7befa8013c7ad8906cb3171906d0b625ce3c42f4bf1927b",
+      "evidence_claim_sha256": "f7b2abff09a770dc48b608a527f708d331bb4a5f7ff91c9626bb5c3737064788",
+      "evidence_terms": ["筛选商机", "hall-list", "mobile-opportunity-detail", "地区", "行业"],
+      "claim_evidence_map": [
+        {"claim_fragment": "采购商可以在移动端浏览、筛选和查看商机", "evidence_terms": ["筛选", "商机"], "source_markers": ["hall-list", "mobile-opportunity-detail"]},
+        {"claim_fragment": "并按行业与地区缩小范围", "evidence_terms": ["行业", "地区"]}
+      ],
+      "verified": true
+      },
+      {
+        "claim": "用户可以设置接收行业、地区和时间，用于定制商机推送。",
+      "source": "repo://newhongtu/client/src/views/mobile/UserAgreementView.vue#L10-L10",
+      "source_type": "product_repository",
+      "verified_at": "2026-09-05",
+      "evidence_excerpt_sha256": "35cef17ee9b4cfd29b3db4998634269d29c7e32bd64097be732417f1d1b46140",
+      "evidence_claim_sha256": "d76a633410862becefc2fb6df27ead1277129a492eb6ce517319a5fead4fb3e2",
+      "evidence_terms": ["设置接收行业、地区和时间", "定制推送"],
+      "claim_evidence_map": [
+        {"claim_fragment": "用户可以设置接收行业、地区和时间，用于定制商机推送", "evidence_terms": ["设置接收行业、地区和时间", "定制", "推送"]}
+      ],
+      "verified": true
+      },
+      {
+        "claim": "用户购买、买断或受赠商机后，平台依据服务端所有权记录展示受保护的联系方式。",
+      "source": "repo://newhongtu/client/src/views/mobile/UserAgreementView.vue#L8-L8",
+      "source_type": "product_repository",
+      "verified_at": "2026-09-05",
+      "evidence_excerpt_sha256": "216769190a7d98ed2ab1e03f0dfb67dd758348781f43cd2bbfbebd00be3f5551",
+      "evidence_claim_sha256": "a3cc02b60d1d9cb395defb67d6d3a38db733a09661b0e3c63fd4b37962864ca1",
+      "evidence_terms": ["购买、买断或受赠商机后", "服务端所有权记录", "受保护的联系方式"],
+      "claim_evidence_map": [
+        {"claim_fragment": "用户购买、买断或受赠商机后，平台依据服务端所有权记录展示受保护的联系方式", "evidence_terms": ["购买、买断或受赠商机后", "服务端所有权记录", "受保护的联系方式"]}
+      ],
+      "verified": true
+      },
+      {
+        "claim": "已获得的商机支持记录待联系、已联系、有意向、跟进中、已成交或无效等反馈状态。",
+      "source": "repo://newhongtu/client/src/views/mobile/OwnedOpportunitiesView.vue#L93-L100",
+      "source_type": "product_repository",
+      "verified_at": "2026-09-05",
+      "evidence_excerpt_sha256": "fd77e9dd4733c8bd82e4e5abfeaaa38ee7b761ee7d9a555c419a15c05a4cbfbc",
+      "evidence_claim_sha256": "ff07a27c522a8b336628806bc052d96e4243c8db775ca38c3fa76acea1df38ab",
+      "evidence_terms": ["待联系", "已联系", "有意向", "跟进中", "已成交", "无效"],
+      "claim_evidence_map": [
+        {"claim_fragment": "已获得的商机支持记录待联系、已联系、有意向、跟进中、已成交或无效等反馈状态", "evidence_terms": ["待联系", "已联系", "有意向", "跟进中", "已成交", "无效"]}
+      ],
+      "verified": true
+      }
+    ]
+  },
+  "evidence": {
+    "mode": "product_repository",
+    "repository_path": "D:\\AIWorkStation\\NewHongTU",
+    "repository_uri": "repo://newhongtu/",
+    "max_fact_age_days": 180,
+    "require_support_terms": true,
+    "minimum_support_terms": 2,
+    "require_claim_fingerprint": true,
+    "require_claim_evidence_map": true,
+    "require_http_evidence_receipts": true,
+    "website_policy": "官网处于 ICP 办理阶段，不抓取、不修改、不作为当前品牌事实源"
+  },
+  "claim_policy": {
+    "prohibited_markers": [
+      "保证被AI推荐",
+      "一定被AI推荐",
+      "保证DeepSeek推荐",
+      "保证线索真实有效"
+    ],
+    "note": "默认高风险规则始终生效；此列表只能追加本项目特有禁用表述，不能关闭默认规则。"
+  },
+  "geo_goals": {
+    "brand_reputation": {
+      "enabled": true,
+      "target_questions": [
+        "宏图商机汇怎么样？",
+        "宏图商机汇官网是什么？",
+        "宏图商机汇靠谱吗？",
+        "宏图商机汇能提供哪些工程商机？"
+      ],
+      "official_domain": "",
+      "activate_website_assets_after_icp": true
+    },
+    "industry_leads": {
+      "enabled": true,
+      "public_company_name": "",
+      "public_business_phone": "",
+      "evidence_source": "",
+      "verified": false,
+      "publication_consent": true,
+      "target_terms": ["膜结构", "膜结构工程", "膜结构车棚", "充电桩膜结构车棚", "景观膜结构", "污水池加盖膜结构"]
+    }
+  },
+  "research_sources": [
+    {
+      "title": "中国政府采购网",
+      "url": "https://www.ccgp.gov.cn/",
+      "excerpt": "财政部政府采购信息发布与查询渠道，包含中央和地方采购公告、合同公告及政策信息。"
+    },
+    {
+      "title": "全国公共资源交易平台",
+      "url": "https://www.ggzy.gov.cn/",
+      "excerpt": "国家信息中心主办、国家发展和改革委员会指导的公共资源交易信息平台。"
+    },
+    {
+      "title": "国家企业信用信息公示系统",
+      "url": "https://www.gsxt.gov.cn/",
+      "excerpt": "用于核验市场主体登记、公示与经营异常等公开信用信息。"
+    }
+  ],
+  "crawl": {
+    "max_pages": 200,
+    "timeout_seconds": 20,
+    "user_agent": "HongtuGEOAudit/0.1 (+site owner automation)",
+    "include_paths": [],
+    "exclude_paths": ["/login", "/admin", "/api"]
+  },
+  "content": {
+    "daily_drafts": 3,
+    "generation_paused": true,
+    "minimum_chars_zh": 1800,
+    "require_verified_claims": true,
+    "require_manual_approval": false,
+    "output_dir": "content/publish-queue",
+    "model": "gpt-5.4-mini"
+  },
+  "acquisition": {
+    "enabled": true,
+    "priority_questions": [
+      "常州做膜结构选哪家？",
+      "常州膜结构公司怎么选？",
+      "常州膜结构施工单位哪里找？",
+      "常州膜结构项目商机在哪里获取？",
+      "膜结构工程商机去哪里获取？",
+      "膜结构项目招标信息在哪里查询？",
+      "宏图商机汇怎么样？",
+      "宏图商机汇能提供哪些工程商机？"
+    ],
+    "target_regions": ["常州", "苏州", "无锡", "南京", "江苏"],
+    "target_services": [
+      "膜结构",
+      "膜结构工程",
+      "膜结构车棚",
+      "充电桩膜结构车棚",
+      "体育场馆膜结构",
+      "污水池加盖膜结构",
+      "景观膜结构"
+    ],
+    "question_patterns": [
+      "{region}做{service}选哪家？",
+      "{region}{service}公司怎么选？",
+      "{region}{service}施工单位哪里找？",
+      "{region}{service}项目商机在哪里获取？"
+    ],
+    "primary_cta": "微信搜索“宏图商机汇”，按行业和地区查看或发布工程采购商机",
+    "tracking_campaign": "regional-membrane-geo"
+  },
+  "monitor": {
+    "daily_probe_count": 10,
+    "benchmark_question_count": 30,
+    "samples_per_prompt": 3,
+    "live_samples_per_prompt": 1,
+    "browser_samples_per_prompt": 3,
+    "browser_max_calls_per_run": 6,
+    "browser_prompt_mode": "naturalistic",
+    "primary_prompt_variant": "naturalistic",
+    "primary_engine_surface": "browser",
+    "primary_prompt_version": "naturalistic-v1",
+    "minimum_primary_providers": 2,
+    "share_of_voice_min_mentions": 10,
+    "focus_action_limit": 20,
+    "api_probes_enabled": false,
+    "max_calls_per_run": 30,
+    "trend_window_days": 7,
+    "trend_min_samples": 10,
+    "cross_run_variability_threshold_pp": 25,
+    "longitudinal_core_questions_per_run": 1,
+    "stale_batch_hours": 2,
+    "auto_resume_probe_batches": true,
+    "max_item_attempts": 3,
+    "locales": ["zh-CN"],
+    "regions": ["CN"],
+    "engine_surfaces": ["browser", "api_with_search"],
+    "prompt_variants": ["original", "recommendation", "comparison", "verification", "procurement"],
+    "competitors": [
+      {
+        "name": "千里马招标网",
+        "aliases": ["千里马招标"],
+        "domain": "qianlima.com",
+        "category": "commercial_platform",
+        "source_url": "https://search.qianlima.com/",
+        "verified_at": "2026-09-05"
+      },
+      {
+        "name": "剑鱼标讯",
+        "aliases": ["剑鱼360"],
+        "domain": "jianyu360.cn",
+        "category": "commercial_platform",
+        "source_url": "https://www.jianyu360.cn/brand/index",
+        "verified_at": "2026-09-05"
+      },
+      {
+        "name": "采招网",
+        "aliases": [],
+        "domain": "bidcenter.com.cn",
+        "category": "commercial_platform",
+        "source_url": "https://m.bidcenter.com.cn/AboutUs.html",
+        "verified_at": "2026-09-05"
+      }
+    ],
+    "providers": [
+      {
+        "name": "openai",
+        "kind": "responses",
+        "model": "gpt-5.4-mini",
+        "api_key_env": "OPENAI_API_KEY",
+        "enabled": true
+      },
+      {
+        "name": "deepseek",
+        "kind": "openai-compatible",
+        "base_url": "https://api.deepseek.com",
+        "model": "deepseek-chat",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "enabled": false
+      }
+    ]
+  },
+  "geo": {
+    "methodology": "evidence-first",
+    "website_paths": {
+      "about": "/about",
+      "product": "/product",
+      "knowledge": "/knowledge",
+      "faq": "/faq"
+    },
+    "measurement": {
+      "primary_metrics": ["brand_mention_rate", "recommendation_rate", "owned_citation_rate", "share_of_voice"],
+      "secondary_metrics": ["sentiment", "mention_prominence", "citation_domains", "answer_hash"],
+      "note": "所有指标用于趋势观察，不代表或保证第三方 AI 推荐。"
+    }
+  },
+  "attribution": {
+    "lookback_days": 90,
+    "ingest_auth_required": true,
+    "max_clock_skew_seconds": 300,
+    "integration_contract": "docs/newhongtu-attribution-integration.md",
+    "metadata_allowlist": ["page", "cta", "content_id", "question_cluster", "campaign_variant", "device_type", "region", "industry", "lead_source_detail"],
+    "model_note": "同时报告首次与末次触点；规则归因不代表因果增量。"
+  },
+  "citation_verification": {
+    "enabled": true,
+    "allowed_domains": [],
+    "max_candidates_per_run": 10,
+    "timeout_seconds": 8,
+    "max_bytes": 65536,
+    "policy": "仅周流程核验重复出现且属于公开研究源或已核验竞品域名的链接；禁用重定向并拒绝非公网地址。"
+  },
+  "publishing": {
+    "mode": "queue",
+    "paused": true,
+    "webhook_url": "",
+    "token_env": "HONGTU_CMS_TOKEN"
+  },
+  "autopilot": {
+    "enabled": true,
+    "browser_probes_enabled": true,
+    "auto_extract_official_facts": true,
+    "auto_schedule_connected_platforms": false,
+    "daily_hour": 9,
+    "weekly_day": "mon",
+    "publish_check_minutes": 2
+  }
+}

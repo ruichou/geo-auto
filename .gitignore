@@ -1,0 +1,35 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.playwright-cli/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# 本机数据库、采集数据、浏览器登录态与运行日志
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/attribution-salt.key
+data/raw/
+data/browser-profiles/
+data/traces/
+data/logs/
+data/social-assets/
+
+# 自动生成的内容与监测报告（可由系统重新生成）
+content/publish-queue/
+content/review-needed/
+content/site-assets/
+reports/evidence-audit.json
+reports/geo-benchmark-prompts.json
+reports/geo-report-*.md
+reports/geo-strategy-snapshot.json
+reports/probe-queue-*.json
+
+# 本地浏览器自动化产生的异常残片
+/({i

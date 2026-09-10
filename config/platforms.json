@@ -1,0 +1,131 @@
+{
+  "wechat": {
+    "name": "微信公众号",
+    "login_url": "https://mp.weixin.qq.com/",
+    "studio_url": "https://mp.weixin.qq.com/",
+    "logged_in_url_contains": ["cgi-bin/home", "cgi-bin/appmsg"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["[contenteditable='true']"],
+    "publish_locators": ["button:has-text('发表')", "button:has-text('发布')"],
+    "notes": "首次连接需要管理员扫码；公众号通常需要从图文编辑入口发布。"
+  },
+  "zhihu": {
+    "name": "知乎",
+    "login_url": "https://www.zhihu.com/signin",
+    "studio_url": "https://zhuanlan.zhihu.com/write",
+    "logged_in_url_contains": ["zhihu.com/", "zhuanlan.zhihu.com/write"],
+    "title_locators": ["textarea[placeholder*='标题']", "input[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']"],
+    "publish_locators": ["button:text-is('发布')"],
+    "notes": "推荐发布专栏文章，不执行批量关注、点赞或评论。"
+  },
+  "toutiao": {
+    "name": "今日头条",
+    "login_url": "https://mp.toutiao.com/",
+    "studio_url": "https://mp.toutiao.com/profile_v4/graphic/publish",
+    "logged_in_url_contains": ["profile_v4", "mp.toutiao.com/profile"],
+    "title_locators": ["textarea[placeholder*='标题']", "input[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']"],
+    "publish_locators": ["button:has-text('发布')"],
+    "notes": "发布地址可能随创作者后台版本调整，可在系统内修改连接器。"
+  },
+  "baijiahao": {
+    "name": "百家号",
+    "login_url": "https://baijiahao.baidu.com/",
+    "studio_url": "https://baijiahao.baidu.com/builder/rc/edit?type=news",
+    "logged_in_url_contains": ["baijiahao.baidu.com/builder", "baijiahao.baidu.com/bjh"],
+    "title_locators": ["textarea[placeholder*='标题']", "input[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']", ".ProseMirror"],
+    "publish_locators": ["button:has-text('发布')"],
+    "notes": "首次注册、实名和验证码由人工完成。"
+  },
+  "xiaohongshu": {
+    "name": "小红书专业号",
+    "login_url": "https://creator.xiaohongshu.com/",
+    "studio_url": "https://creator.xiaohongshu.com/publish/publish",
+    "logged_in_url_contains": ["creator.xiaohongshu.com/publish", "creator.xiaohongshu.com/new"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']", "textarea[placeholder*='正文']"],
+    "publish_locators": ["button:has-text('发布')"],
+    "notes": "长文应转换成适合笔记的短版与配图；系统不会绕过平台风控。"
+  },
+  "bilibili": {
+    "name": "哔哩哔哩专栏",
+    "login_url": "https://passport.bilibili.com/login",
+    "studio_url": "https://member.bilibili.com/platform/upload/text/edit",
+    "logged_in_url_contains": ["member.bilibili.com/platform"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']", ".ql-editor"],
+    "publish_locators": ["button:has-text('发布')"],
+    "notes": "适合行业科普与案例型专栏。"
+  },
+  "csdn": {
+    "name": "CSDN",
+    "login_url": "https://passport.csdn.net/login",
+    "studio_url": "https://mp.csdn.net/mp_blog/creation/editor",
+    "logged_in_url_contains": ["mp.csdn.net/mp_blog/creation"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']", ".editor__inner", "textarea"],
+    "publish_locators": ["button:has-text('发布文章')", "button:has-text('发布')"],
+    "notes": "仅建议发布技术、数据或企业数字化相关内容。"
+  },
+  "jianshu": {
+    "name": "简书",
+    "login_url": "https://www.jianshu.com/sign_in",
+    "studio_url": "https://www.jianshu.com/writer",
+    "logged_in_url_contains": ["jianshu.com/writer"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']", "textarea"],
+    "publish_locators": ["button:has-text('发布文章')", "button:has-text('发布')"],
+    "notes": "适合经验方法类长文。"
+  },
+  "sohu": {
+    "name": "搜狐号",
+    "login_url": "https://mp.sohu.com/",
+    "studio_url": "https://mp.sohu.com/mpfe/v4/contentManagement/first/page",
+    "logged_in_url_contains": ["mp.sohu.com/mpfe"],
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["div[contenteditable='true']"],
+    "publish_locators": ["button:has-text('发布')"],
+    "notes": "连接器地址与定位器可在后台按新版页面校准。"
+  },
+  "douyin": {
+    "name": "抖音创作者中心",
+    "login_url": "https://creator.douyin.com/creator-micro/home",
+    "studio_url": "https://creator.douyin.com/creator-micro/content/upload?default-tab=3",
+    "logged_in_url_contains": ["creator.douyin.com/creator-micro"],
+    "logged_in_locators": ["a[href*='/creator-micro/content']", "text=发布作品", "text=作品管理"],
+    "media_mode": "image_text",
+    "upload_locators": ["input[type='file']"],
+    "title_optional": true,
+    "title_locators": ["input[placeholder*='标题']", "textarea[placeholder*='标题']"],
+    "body_locators": ["textarea[placeholder*='描述']", "div[contenteditable='true']"],
+    "publish_locators": ["button:text-is('发布')", "button:has-text('发布作品')"],
+    "success_url_contains": ["/creator-micro/content/manage"],
+    "notes": "使用图文卡片发布地域工程采购内容；首次登录、实名和验证码由用户完成。"
+  },
+  "deepseek": {
+    "name": "DeepSeek AI 监测",
+    "kind": "ai_probe",
+    "login_url": "https://chat.deepseek.com/sign_in",
+    "studio_url": "https://chat.deepseek.com/",
+    "new_chat_url": "https://chat.deepseek.com/",
+    "logged_in_url_contains": ["chat.deepseek.com/"],
+    "input_locators": ["textarea", "[contenteditable='true']"],
+    "answer_locators": [".ds-markdown", "[class*='markdown']", "[class*='assistant']"],
+    "notes": "只做低频 GEO 提及与引用抽样，不发布内容、不刷评价。"
+  },
+  "kimi": {
+    "name": "Kimi AI 监测",
+    "kind": "ai_probe",
+    "login_url": "https://www.kimi.com/",
+    "studio_url": "https://www.kimi.com/",
+    "new_chat_url": "https://www.kimi.com/?chat_enter_method=new_chat",
+    "logged_in_url_contains": ["www.kimi.com/"],
+    "logged_out_locators": ["button:has-text('登录')", "button:has-text('Log in')"],
+    "input_locators": ["[contenteditable='true'][role='textbox']", "[contenteditable='true']"],
+    "answer_locators": ["[data-testid*='assistant']", "[data-role='assistant']", "[class*='markdown']", "[class*='assistant']"],
+    "new_chat_locators": ["a[href*='chat_enter_method=new_chat']", "a:has-text('新建会话')", "button:has-text('新建会话')"],
+    "notes": "第二独立 AI 引擎；公开页已校准输入框和新会话入口。首次登录由用户完成，成功采样前不计入引擎覆盖。"
+  }
+}

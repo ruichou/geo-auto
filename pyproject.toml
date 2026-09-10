@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hongtu-geo-automation"
+version = "0.1.0"
+description = "宏图商机 GEO 自动化：站点审计、问题库、内容生产、质量闸门、发布队列与引用监测"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "apscheduler>=3.10",
+  "bleach>=6.1",
+  "fastapi>=0.115",
+  "markdown>=3.6",
+  "openai>=1.0",
+  "Pillow>=10.4",
+  "playwright>=1.55",
+  "uvicorn>=0.30"
+]
+
+[project.scripts]
+hongtu-geo = "hongtu_geo.cli:main"
+hongtu-geo-browser = "hongtu_geo.browser:browser_main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
