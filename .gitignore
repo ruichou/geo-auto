@@ -30,6 +30,3 @@ reports/geo-benchmark-prompts.json
 reports/geo-report-*.md
 reports/geo-strategy-snapshot.json
 reports/probe-queue-*.json
-
-# 本地浏览器自动化产生的异常残片
-/({i

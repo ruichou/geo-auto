@@ -1580,7 +1580,10 @@ def build_report(settings: Settings, db: Database) -> Path:
     report.append(
         f"- 趋势比较：{trends['status']}｜窗口 {trends['window_days']} 天｜"
         f"当前 {trends['current_period']['samples']} 个样本｜前期 {trends['previous_period']['samples']} 个样本｜"
-        f"每侧最低 {trends['minimum_samples_per_window']} 个样本"
+        f"匹配问题 {trends['primary_matched_panel']['matched_question_count']} 个｜"
+        f"匹配面板每侧 {trends['primary_matched_panel']['paired_samples_per_window']} 个样本｜"
+        f"门槛 {trends['minimum_matched_questions']} 个相同问题且每侧 "
+        f"{trends['minimum_samples_per_window']} 个样本"
     )
     if visibility["recent_batches"]:
         latest_batch = visibility["recent_batches"][0]
@@ -1595,7 +1598,9 @@ def build_report(settings: Settings, db: Database) -> Path:
         deltas = comparison["deltas_percentage_points"]
         report.append(
             f"- {comparison['provider']}（{comparison['engine_surface']} / {comparison['prompt_variant']} / "
-            f"{comparison['prompt_version']}）窗口变化："
+            f"{comparison['prompt_version']} / {comparison['locale']}-{comparison['region']}）窗口变化："
+            f"匹配问题 {comparison['matched_panel']['matched_question_count']}｜"
+            f"面板每侧 {comparison['matched_panel']['paired_samples_per_window']} 个样本｜"
             f"提及 {deltas['mention_rate']:+.1f} 个百分点｜推荐 {deltas['recommendation_rate']:+.1f} 个百分点｜"
             f"引用 {deltas['owned_citation_rate']:+.1f} 个百分点｜"
             f"区间分离信号 {','.join(comparison['non_overlapping_ci_signals']) or '无'}"

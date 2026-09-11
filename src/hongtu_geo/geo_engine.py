@@ -1016,13 +1016,25 @@ def build_visibility_trends(settings: Settings, db: Database) -> dict[str, Any]:
     monitor = settings.raw.get("monitor", {})
     window_days = min(90, max(1, int(monitor.get("trend_window_days", 7))))
     minimum_samples = min(1000, max(3, int(monitor.get("trend_min_samples", 10))))
+    minimum_matched_questions = min(
+        100, max(1, int(monitor.get("trend_min_matched_questions", 3)))
+    )
+    configured_locales = settings.raw.get("monitor", {}).get("locales", ["zh-CN"])
+    configured_regions = settings.raw.get("monitor", {}).get("regions", ["CN"])
+    primary_locale = str(monitor.get(
+        "primary_locale", configured_locales[0] if configured_locales else "zh-CN"
+    ))
+    primary_region = str(monitor.get(
+        "primary_region", configured_regions[0] if configured_regions else "CN"
+    ))
     today = datetime.now(UTC).date()
     current_start = today - timedelta(days=window_days - 1)
     previous_end = current_start - timedelta(days=1)
     previous_start = previous_end - timedelta(days=window_days - 1)
     rows = db.query(
-        """SELECT provider,engine_surface,prompt_variant,prompt_version,probed_at,brand_mentioned,recommended,
-        domain_cited,visibility_score FROM probes ORDER BY probed_at,id"""
+        """SELECT id,provider,question,engine_surface,prompt_variant,prompt_version,locale,region,
+        experiment_id,sample_index,probed_at,brand_mentioned,recommended,domain_cited,visibility_score
+        FROM probes ORDER BY probed_at,id"""
     )
 
     parsed: list[tuple[Any, Any]] = []
@@ -1057,63 +1069,133 @@ def build_visibility_trends(settings: Settings, db: Database) -> dict[str, Any]:
             "owned_citation_rate_ci95": _wilson_interval(citations, total),
         }
 
-    daily_groups: dict[tuple[Any, str, str, str, str], list[Any]] = {}
+    def matched_panel(current_items: list[Any], previous_items: list[Any]) -> dict[str, Any]:
+        """Balance question composition before describing a window-over-window change."""
+        def deduplicate_sample_slots(items: list[Any]) -> tuple[list[Any], int]:
+            by_slot: dict[tuple[str, str, int], Any] = {}
+            for row in items:
+                experiment = str(row["experiment_id"] or f"legacy-single-{row['id']}")
+                slot = max(1, int(row["sample_index"] or 1))
+                by_slot[(str(row["question"]), experiment, slot)] = row
+            return list(by_slot.values()), len(items) - len(by_slot)
+
+        current_items, current_duplicate_slots = deduplicate_sample_slots(current_items)
+        previous_items, previous_duplicate_slots = deduplicate_sample_slots(previous_items)
+        current_by_question: dict[str, list[Any]] = {}
+        previous_by_question: dict[str, list[Any]] = {}
+        for row in current_items:
+            current_by_question.setdefault(str(row["question"]), []).append(row)
+        for row in previous_items:
+            previous_by_question.setdefault(str(row["question"]), []).append(row)
+        questions = sorted(set(current_by_question) & set(previous_by_question))
+        balanced_current: list[Any] = []
+        balanced_previous: list[Any] = []
+        per_question_samples: dict[str, int] = {}
+        for question in questions:
+            pair_count = min(
+                len(current_by_question[question]), len(previous_by_question[question])
+            )
+            if pair_count <= 0:
+                continue
+            # Use the most recent observations on each side and the same count per
+            # question, so a changed question mix cannot manufacture a trend.
+            balanced_current.extend(current_by_question[question][-pair_count:])
+            balanced_previous.extend(previous_by_question[question][-pair_count:])
+            per_question_samples[question] = pair_count
+        current_summary = summarize(balanced_current)
+        previous_summary = summarize(balanced_previous)
+        ready = (
+            len(per_question_samples) >= minimum_matched_questions
+            and len(balanced_current) >= minimum_samples
+            and len(balanced_previous) >= minimum_samples
+        )
+        deltas: dict[str, float | None] = {}
+        interval_signals: list[str] = []
+        for metric in ("mention_rate", "recommendation_rate", "owned_citation_rate"):
+            current_value, previous_value = current_summary[metric], previous_summary[metric]
+            deltas[metric] = (
+                round(float(current_value) - float(previous_value), 1)
+                if ready and current_value is not None and previous_value is not None else None
+            )
+            current_ci = current_summary[f"{metric}_ci95"]
+            previous_ci = previous_summary[f"{metric}_ci95"]
+            if ready and current_ci and previous_ci and (
+                current_ci[1] < previous_ci[0] or previous_ci[1] < current_ci[0]
+            ):
+                interval_signals.append(metric)
+        return {
+            "status": "comparison_ready" if ready else "insufficient_data",
+            "matched_question_count": len(per_question_samples),
+            "minimum_matched_questions": minimum_matched_questions,
+            "paired_samples_per_window": len(balanced_current),
+            "per_question_samples": per_question_samples,
+            "current": current_summary,
+            "previous": previous_summary,
+            "deltas_percentage_points": deltas,
+            "non_overlapping_ci_signals": interval_signals,
+            "current_samples_excluded": len(current_items) - len(balanced_current),
+            "previous_samples_excluded": len(previous_items) - len(balanced_previous),
+            "duplicate_sample_slots_excluded": {
+                "current": current_duplicate_slots,
+                "previous": previous_duplicate_slots,
+            },
+        }
+
+    daily_groups: dict[tuple[Any, str, str, str, str, str, str], list[Any]] = {}
     for row, day in parsed:
         daily_groups.setdefault((
-            day, row["provider"], row["engine_surface"], row["prompt_variant"], row["prompt_version"]
+            day, row["provider"], row["engine_surface"], row["prompt_variant"], row["prompt_version"],
+            row["locale"], row["region"],
         ), []).append(row)
     daily = []
-    for (day, provider, surface, variant, version), items in sorted(daily_groups.items(), reverse=True):
+    for (day, provider, surface, variant, version, locale, region), items in sorted(
+        daily_groups.items(), reverse=True
+    ):
         daily.append({
             "date": day.isoformat(), "provider": provider, "engine_surface": surface,
-            "prompt_variant": variant, "prompt_version": version, **summarize(items),
+            "prompt_variant": variant, "prompt_version": version,
+            "locale": locale, "region": region, **summarize(items),
         })
 
     surfaces = sorted({
-        (row["provider"], row["engine_surface"], row["prompt_variant"], row["prompt_version"])
+        (
+            row["provider"], row["engine_surface"], row["prompt_variant"], row["prompt_version"],
+            row["locale"], row["region"],
+        )
         for row, _ in parsed
     })
     comparisons: list[dict[str, Any]] = []
-    for provider, surface, variant, version in surfaces:
+    for provider, surface, variant, version, locale, region in surfaces:
         current_items = [
             row for row, day in parsed
             if row["provider"] == provider and row["engine_surface"] == surface
             and row["prompt_variant"] == variant and row["prompt_version"] == version
+            and row["locale"] == locale and row["region"] == region
             and current_start <= day <= today
         ]
         previous_items = [
             row for row, day in parsed
             if row["provider"] == provider and row["engine_surface"] == surface
             and row["prompt_variant"] == variant and row["prompt_version"] == version
+            and row["locale"] == locale and row["region"] == region
             and previous_start <= day <= previous_end
         ]
         current = summarize(current_items)
         previous = summarize(previous_items)
-        ready = current["samples"] >= minimum_samples and previous["samples"] >= minimum_samples
-        deltas: dict[str, float | None] = {}
-        interval_signals: list[str] = []
-        for metric in ("mention_rate", "recommendation_rate", "owned_citation_rate"):
-            current_value, previous_value = current[metric], previous[metric]
-            deltas[metric] = (
-                round(float(current_value) - float(previous_value), 1)
-                if ready and current_value is not None and previous_value is not None else None
-            )
-            ci_name = f"{metric}_ci95"
-            current_ci, previous_ci = current[ci_name], previous[ci_name]
-            if ready and current_ci and previous_ci and (
-                current_ci[1] < previous_ci[0] or previous_ci[1] < current_ci[0]
-            ):
-                interval_signals.append(metric)
+        panel = matched_panel(current_items, previous_items)
         comparisons.append({
             "provider": provider,
             "engine_surface": surface,
             "prompt_variant": variant,
             "prompt_version": version,
-            "status": "comparison_ready" if ready else "insufficient_data",
+            "locale": locale,
+            "region": region,
+            "status": panel["status"],
             "current": current,
             "previous": previous,
-            "deltas_percentage_points": deltas,
-            "non_overlapping_ci_signals": interval_signals,
+            "matched_panel": panel,
+            "deltas_percentage_points": panel["deltas_percentage_points"],
+            "non_overlapping_ci_signals": panel["non_overlapping_ci_signals"],
         })
 
     primary_variant = str(monitor.get("primary_prompt_variant", "naturalistic"))
@@ -1126,34 +1208,46 @@ def build_visibility_trends(settings: Settings, db: Database) -> dict[str, Any]:
         if row["prompt_variant"] == primary_variant
         and row["engine_surface"] == primary_surface
         and row["prompt_version"] == primary_version
+        and row["locale"] == primary_locale
+        and row["region"] == primary_region
     ]
     previous_all = [
         row for row in previous_all_modes
         if row["prompt_variant"] == primary_variant
         and row["engine_surface"] == primary_surface
         and row["prompt_version"] == primary_version
+        and row["locale"] == primary_locale
+        and row["region"] == primary_region
     ]
-    primary_ready = len(current_all) >= minimum_samples and len(previous_all) >= minimum_samples
+    primary_panel = matched_panel(current_all, previous_all)
     return {
         "status": (
             "no_samples" if not current_all and not previous_all
-            else "comparison_ready" if primary_ready
+            else "comparison_ready" if primary_panel["status"] == "comparison_ready"
             else "insufficient_data"
         ),
         "window_days": window_days,
         "minimum_samples_per_window": minimum_samples,
+        "minimum_matched_questions": minimum_matched_questions,
         "primary_prompt_variant": primary_variant,
         "primary_engine_surface": primary_surface,
         "primary_prompt_version": primary_version,
+        "primary_locale": primary_locale,
+        "primary_region": primary_region,
         "all_modes_current_samples": len(current_all_modes),
         "all_modes_previous_samples": len(previous_all_modes),
         "current_period": {"start": current_start.isoformat(), "end": today.isoformat(), **summarize(current_all)},
         "previous_period": {"start": previous_start.isoformat(), "end": previous_end.isoformat(), **summarize(previous_all)},
+        "primary_matched_panel": primary_panel,
         "comparisons": comparisons,
         "daily": daily[: window_days * 8],
         "invalid_timestamps": invalid_timestamps,
         "future_samples_ignored": future_samples,
-        "method_note": "仅在引擎、surface、提示模式和提示版本完全一致，且相邻窗口双方达到样本门槛时计算变化；区间不重叠不证明因果。",
+        "method_note": (
+            "仅在引擎、surface、提示模式、提示版本、语言和地区完全一致，并把相邻窗口限制为相同问题、"
+            "每题相同样本数的匹配面板后计算变化；匹配问题数和双方样本量均须达标。"
+            "同一实验批次的重复样本槽位会去重；区间不重叠只作筛查信号，不证明因果。"
+        ),
     }
 
 

@@ -3344,12 +3344,12 @@ def test_visibility_trends_requires_two_full_windows_and_reports_screening_signa
     with Database(settings.db_path) as db:
         for index in range(10):
             current = record_probe(
-                db, settings, "trend-ai", f"当前问题 {index}", "推荐宏图商机汇。",
+                db, settings, "trend-ai", f"趋势问题 {index}", "推荐宏图商机汇。",
                 engine_surface="api", experiment_id="current-window",
             )
             db.execute("UPDATE probes SET probed_at=? WHERE id=?", (current_time.isoformat(), current["probe_id"]))
             previous = record_probe(
-                db, settings, "trend-ai", f"前期问题 {index}", "暂未找到合适平台。",
+                db, settings, "trend-ai", f"趋势问题 {index}", "暂未找到合适平台。",
                 engine_surface="api", experiment_id="previous-window",
             )
             db.execute("UPDATE probes SET probed_at=? WHERE id=?", (previous_time.isoformat(), previous["probe_id"]))
@@ -3358,9 +3358,165 @@ def test_visibility_trends_requires_two_full_windows_and_reports_screening_signa
     assert trends["status"] == "comparison_ready"
     assert comparison["current"]["samples"] == 10
     assert comparison["previous"]["samples"] == 10
+    assert comparison["matched_panel"]["matched_question_count"] == 10
+    assert comparison["matched_panel"]["paired_samples_per_window"] == 10
     assert comparison["deltas_percentage_points"]["mention_rate"] == 100.0
     assert "mention_rate" in comparison["non_overlapping_ci_signals"]
     assert "不证明因果" in trends["method_note"]
+
+
+def test_visibility_trends_rejects_composition_shift_even_with_large_raw_windows(
+    tmp_path: Path,
+) -> None:
+    settings = make_settings(tmp_path, verified=True)
+    settings.raw["monitor"].update({
+        "trend_window_days": 7,
+        "trend_min_samples": 10,
+        "trend_min_matched_questions": 3,
+        "primary_engine_surface": "api",
+    })
+    current_time = datetime.now(UTC).replace(microsecond=0)
+    previous_time = current_time - timedelta(days=7)
+    with Database(settings.db_path) as db:
+        for index in range(10):
+            current = record_probe(
+                db, settings, "trend-ai", f"当前独有问题 {index}", "宏图商机汇。",
+                engine_surface="api", experiment_id="current-window",
+            )
+            db.execute("UPDATE probes SET probed_at=? WHERE id=?", (current_time.isoformat(), current["probe_id"]))
+            previous = record_probe(
+                db, settings, "trend-ai", f"前期独有问题 {index}", "未提及品牌。",
+                engine_surface="api", experiment_id="previous-window",
+            )
+            db.execute("UPDATE probes SET probed_at=? WHERE id=?", (previous_time.isoformat(), previous["probe_id"]))
+        trends = build_visibility_trends(settings, db)
+    comparison = trends["comparisons"][0]
+    assert comparison["current"]["samples"] == 10
+    assert comparison["previous"]["samples"] == 10
+    assert comparison["status"] == "insufficient_data"
+    assert comparison["matched_panel"]["matched_question_count"] == 0
+    assert comparison["deltas_percentage_points"]["mention_rate"] is None
+
+
+def test_visibility_trends_balances_sample_count_for_each_matched_question(
+    tmp_path: Path,
+) -> None:
+    settings = make_settings(tmp_path, verified=True)
+    settings.raw["monitor"].update({
+        "trend_window_days": 7,
+        "trend_min_samples": 3,
+        "trend_min_matched_questions": 3,
+        "primary_engine_surface": "api",
+    })
+    current_time = datetime.now(UTC).replace(microsecond=0)
+    previous_time = current_time - timedelta(days=7)
+    with Database(settings.db_path) as db:
+        for question in ("问题一", "问题二", "问题三"):
+            for index in range(3):
+                current = record_probe(
+                    db, settings, "trend-ai", question, "宏图商机汇。",
+                    engine_surface="api", experiment_id=f"current-{question}-{index}",
+                )
+                db.execute(
+                    "UPDATE probes SET probed_at=? WHERE id=?",
+                    (current_time.isoformat(), current["probe_id"]),
+                )
+            previous = record_probe(
+                db, settings, "trend-ai", question, "未提及品牌。",
+                engine_surface="api", experiment_id=f"previous-{question}",
+            )
+            db.execute(
+                "UPDATE probes SET probed_at=? WHERE id=?",
+                (previous_time.isoformat(), previous["probe_id"]),
+            )
+        trends = build_visibility_trends(settings, db)
+    panel = trends["comparisons"][0]["matched_panel"]
+    assert panel["status"] == "comparison_ready"
+    assert panel["paired_samples_per_window"] == 3
+    assert panel["current_samples_excluded"] == 6
+    assert panel["previous_samples_excluded"] == 0
+    assert panel["per_question_samples"] == {"问题一": 1, "问题三": 1, "问题二": 1}
+
+
+def test_visibility_trends_does_not_mix_locale_or_region(tmp_path: Path) -> None:
+    settings = make_settings(tmp_path, verified=True)
+    settings.raw["monitor"].update({
+        "trend_window_days": 7,
+        "trend_min_samples": 3,
+        "trend_min_matched_questions": 3,
+        "primary_engine_surface": "api",
+        "primary_locale": "zh-CN",
+        "primary_region": "CN",
+    })
+    current_time = datetime.now(UTC).replace(microsecond=0)
+    previous_time = current_time - timedelta(days=7)
+    with Database(settings.db_path) as db:
+        for question in ("问题一", "问题二", "问题三"):
+            current = record_probe(
+                db, settings, "trend-ai", question, "宏图商机汇。",
+                engine_surface="api", locale="zh-CN", region="CN",
+                experiment_id=f"current-{question}",
+            )
+            db.execute(
+                "UPDATE probes SET probed_at=? WHERE id=?",
+                (current_time.isoformat(), current["probe_id"]),
+            )
+            previous = record_probe(
+                db, settings, "trend-ai", question, "未提及品牌。",
+                engine_surface="api", locale="en-US", region="US",
+                experiment_id=f"previous-{question}",
+            )
+            db.execute(
+                "UPDATE probes SET probed_at=? WHERE id=?",
+                (previous_time.isoformat(), previous["probe_id"]),
+            )
+        trends = build_visibility_trends(settings, db)
+    assert trends["status"] == "insufficient_data"
+    assert trends["current_period"]["samples"] == 3
+    assert trends["previous_period"]["samples"] == 0
+    assert len(trends["comparisons"]) == 2
+    assert all(item["status"] == "insufficient_data" for item in trends["comparisons"])
+    assert {(item["locale"], item["region"]) for item in trends["comparisons"]} == {
+        ("zh-CN", "CN"), ("en-US", "US")
+    }
+
+
+def test_visibility_trends_deduplicates_retried_sample_slots(tmp_path: Path) -> None:
+    settings = make_settings(tmp_path, verified=True)
+    settings.raw["monitor"].update({
+        "trend_window_days": 7,
+        "trend_min_samples": 4,
+        "trend_min_matched_questions": 3,
+        "primary_engine_surface": "api",
+    })
+    current_time = datetime.now(UTC).replace(microsecond=0)
+    previous_time = current_time - timedelta(days=7)
+    with Database(settings.db_path) as db:
+        for question in ("问题一", "问题二", "问题三"):
+            for period, captured_at, answer in (
+                ("current", current_time, "宏图商机汇。"),
+                ("previous", previous_time, "未提及品牌。"),
+            ):
+                for retry in range(3):
+                    probe = record_probe(
+                        db, settings, "trend-ai", question, answer,
+                        engine_surface="api", sample_index=1,
+                        experiment_id=f"{period}-batch",
+                        raw_metadata={"retry": retry},
+                    )
+                    db.execute(
+                        "UPDATE probes SET probed_at=? WHERE id=?",
+                        (captured_at.isoformat(), probe["probe_id"]),
+                    )
+        trends = build_visibility_trends(settings, db)
+    comparison = trends["comparisons"][0]
+    panel = comparison["matched_panel"]
+    assert comparison["current"]["samples"] == 9
+    assert comparison["previous"]["samples"] == 9
+    assert comparison["status"] == "insufficient_data"
+    assert panel["paired_samples_per_window"] == 3
+    assert panel["duplicate_sample_slots_excluded"] == {"current": 6, "previous": 6}
+    assert comparison["deltas_percentage_points"]["mention_rate"] is None
 
 
 def test_visibility_trends_refuses_delta_when_either_window_is_too_small(tmp_path: Path) -> None:
