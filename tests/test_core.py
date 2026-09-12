@@ -3248,6 +3248,58 @@ def test_ai_probe_readiness_validates_adapters_and_declared_login_state(tmp_path
     assert any("login_url" in error for error in validate_ai_probe_spec("bad-url", malformed_url_spec))
 
 
+def test_ai_probe_readiness_distinguishes_due_active_and_invalid_retry_windows(
+    tmp_path: Path,
+) -> None:
+    settings = make_settings(tmp_path, verified=True)
+    settings.raw["monitor"]["minimum_primary_providers"] = 2
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    spec = {
+        "name": "AI", "kind": "ai_probe",
+        "login_url": "https://ai.example/login",
+        "studio_url": "https://ai.example/",
+        "new_chat_url": "https://ai.example/",
+        "logged_in_url_contains": ["ai.example/"],
+        "input_locators": ["textarea"], "answer_locators": [".answer"],
+    }
+    (config_dir / "platforms.json").write_text(
+        json.dumps({
+            "ai-active": dict(spec, name="AI Active"),
+            "ai-due": dict(spec, name="AI Due"),
+            "ai-invalid": dict(spec, name="AI Invalid"),
+        }),
+        encoding="utf-8",
+    )
+    now = datetime.now(UTC)
+    with Database(settings.db_path) as db:
+        for platform, retry_after in (
+            ("ai-active", (now + timedelta(hours=2)).isoformat()),
+            ("ai-due", (now - timedelta(hours=2)).isoformat()),
+            ("ai-invalid", "not-a-time"),
+        ):
+            db.execute(
+                """INSERT INTO platform_accounts(
+                platform,display_name,profile_dir,status,retry_after
+                ) VALUES(?,?,?,'temporarily_unavailable',?)""",
+                (platform, platform, "hidden", retry_after),
+            )
+        readiness = build_ai_probe_readiness(settings, db)
+    by_provider = {item["provider"]: item for item in readiness["providers"]}
+    assert readiness["status"] == "insufficient_connected_engines"
+    assert readiness["declared_connected"] == 0
+    assert readiness["ready_for_attempt"] == 1
+    assert readiness["retry_due"] == 1
+    assert readiness["active_restrictions"] == 1
+    assert readiness["invalid_retry_timestamps"] == 1
+    assert by_provider["ai-due"]["effective_account_status"] == "retry_due"
+    assert by_provider["ai-due"]["ready_for_attempt"] is True
+    assert by_provider["ai-active"]["retry_state"] == "restriction_active"
+    assert by_provider["ai-active"]["ready_for_attempt"] is False
+    assert by_provider["ai-invalid"]["retry_state"] == "invalid"
+    assert by_provider["ai-invalid"]["ready_for_attempt"] is False
+
+
 @pytest.mark.parametrize("non_object", [[], None, "platforms"])
 def test_ai_probe_readiness_rejects_non_object_json_and_invalid_target(
     tmp_path: Path, non_object,

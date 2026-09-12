@@ -1502,15 +1502,25 @@ def build_report(settings: Settings, db: Database) -> Path:
         f"- AI 适配器就绪：{ai_readiness['status']}｜配置 {ai_readiness['configured_providers']}｜"
         f"有效 {ai_readiness['valid_adapters']}｜已声明登录 {ai_readiness['declared_connected']}｜"
         f"可尝试采样 {ai_readiness['ready_for_attempt']}/{ai_readiness['minimum_providers']}｜"
-        f"缺口 {ai_readiness['provider_deficit']}"
+        f"到期可重试 {ai_readiness['retry_due']}｜限制中 {ai_readiness['active_restrictions']}｜"
+        f"重试时间异常 {ai_readiness['invalid_retry_timestamps']}｜缺口 {ai_readiness['provider_deficit']}"
     )
     for adapter_error in ai_readiness["errors"]:
         report.append(f"- AI 适配器错误：{adapter_error}")
     for provider in ai_readiness["providers"]:
-        if provider.get("retry_after"):
+        if provider.get("retry_state") == "retry_due":
             report.append(
-                f"- AI 自动重试：{provider['name']}｜账号状态 {provider['account_status']}｜"
-                f"重试时间 {provider['retry_after']}"
+                f"- AI 自动重试已到期：{provider['name']}｜原状态 {provider['account_status']}｜"
+                f"下一次后台采样可以恢复尝试｜原重试时间 {provider['retry_after']}"
+            )
+        elif provider.get("retry_state") == "restriction_active":
+            report.append(
+                f"- AI 自动重试等待中：{provider['name']}｜重试时间 {provider['retry_after']}"
+            )
+        elif provider.get("retry_state") in {"invalid", "unknown"}:
+            report.append(
+                f"- AI 重试时间异常：{provider['name']}｜状态 {provider['retry_state']}｜"
+                "保持不可尝试，避免错误解除限制"
             )
         elif provider["account_status"] != "connected":
             report.append(
